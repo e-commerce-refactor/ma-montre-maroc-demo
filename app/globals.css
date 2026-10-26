@@ -4,9 +4,21 @@
 
 @layer base {
   body {
-    @apply bg-[#FDFBF7] text-[#0F172A] font-sans antialiased selection:bg-[#D4AF37] selection:text-white;
+    @apply bg-[#07090E] text-slate-100 font-sans antialiased selection:bg-rolex-600 selection:text-white;
   }
-  h1, h2, h3, h4, .font-serif {
-    font-family: 'Playfair Display', Georgia, serif;
-  }
+}
+
+/* Custom subtle scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #07090E;
+}
+::-webkit-scrollbar-thumb {
+  background: #1E293B;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
 }

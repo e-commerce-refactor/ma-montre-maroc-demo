@@ -1,9 +1,9 @@
-'use strict';
 'use client';
 
 import React, { useState } from 'react';
 import { Product, MOROCCAN_CITIES } from '../data/products';
 import { supabase } from '../lib/supabase';
+import { ShieldCheck, Truck, X, Check, Lock, Watch } from 'lucide-react';
 
 interface CodModalProps {
   product: Product | null;
@@ -18,7 +18,7 @@ export default function CodModal({ product, onClose, onSuccess }: CodModalProps)
   const [phone, setPhone] = useState('');
   const [city, setCity] = useState('Casablanca');
   const [address, setAddress] = useState('');
-  const [preference, setPreference] = useState('Standard (Ajustable)');
+  const [wristSize, setWristSize] = useState('Standard Ajustable (17-18 cm)');
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -31,11 +31,11 @@ export default function CodModal({ product, onClose, onSuccess }: CodModalProps)
     e.preventDefault();
     setErrorMsg('');
 
-    // Moroccan phone verification (06 / 07 / +212)
-    const cleanPhone = phone.replace(/\s+/g, '');
+    // Moroccan phone verification (06 / 07 / 05 / +212)
+    const cleanPhone = phone.replace(/[\s\-\.]+/g, '');
     const phoneRegex = /^(?:\+212|0)[5-7]\d{8}$/;
     if (!phoneRegex.test(cleanPhone)) {
-      setErrorMsg('Veuillez entrer un numéro de téléphone marocain valide (ex: 06 12 34 56 78).');
+      setErrorMsg('Veuillez entrer un numéro de téléphone marocain valide (ex: 06 12 34 56 78 ou 07 ...).');
       return;
     }
 
@@ -55,11 +55,11 @@ export default function CodModal({ product, onClose, onSuccess }: CodModalProps)
           customer_name: fullName,
           phone: cleanPhone,
           city: city,
-          address: address || 'Non précisée',
-          items_summary: `${product.name} (${preference})`,
+          address: address || 'Non précisée (Confirmation WhatsApp)',
+          items_summary: `${product.name} [Taille: ${wristSize}]`,
           total: totalToPay,
           status: 'en_attente',
-          notes: `Livraison: ${shippingFee === 0 ? 'Gratuite (Casablanca)' : '35 DH (Hors Casablanca)'}`
+          notes: `Horlogerie COD - Frais: ${shippingFee === 0 ? 'Gratuit (Casablanca)' : '35 DH'} - Montre: ${product.diameter}`
         }
       ]).then((res) => {
         if (res.error) {
@@ -75,6 +75,7 @@ export default function CodModal({ product, onClose, onSuccess }: CodModalProps)
       onSuccess({
         orderId: orderRef,
         productName: product.name,
+        diameter: product.diameter,
         priceMad: product.priceMad,
         shippingFee,
         totalToPay,
@@ -82,93 +83,111 @@ export default function CodModal({ product, onClose, onSuccess }: CodModalProps)
         customerPhone: phone,
         customerCity: city,
         customerAddress: address,
-        preference: preference,
+        wristSize: wristSize,
       });
-    }, 600);
+    }, 500);
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl border border-gray-100 flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+      <div className="bg-[#0B101D] text-slate-100 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl border border-slate-700/80 flex flex-col max-h-[92vh]">
         
         {/* Header */}
-        <div className="bg-[#0F172A] text-white p-4 flex items-center justify-between">
-          <div>
-            <span className="text-[10px] tracking-widest text-[#D4AF37] uppercase font-bold">Commande Éclair 1-Clic</span>
-            <h3 className="font-serif text-lg font-bold">Paiement à la Livraison (COD)</h3>
+        <div className="bg-[#07090E] p-4 border-b border-slate-800 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-champagne-400">
+              <Watch className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-[10px] tracking-widest text-champagne-400 uppercase font-mono font-bold">
+                COMMANDE RAPIDE SANS CARTE BANCAIRE
+              </span>
+              <h3 className="text-base font-bold text-white">
+                Paiement à la Livraison (COD)
+              </h3>
+            </div>
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-white text-xl p-1 font-bold"
+            className="w-8 h-8 rounded-lg bg-slate-900 border border-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors"
           >
-            ✕
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Selected Product Summary */}
-        <div className="bg-amber-50/50 p-4 border-b border-amber-100 flex items-center gap-3">
-          <img
-            src={product.image}
-            alt={product.name}
-            className="w-14 h-14 object-cover rounded-lg border border-amber-200"
-          />
+        {/* Selected Watch Summary */}
+        <div className="bg-slate-900/80 p-4 border-b border-slate-800/80 flex items-center gap-3.5">
+          <div className="w-16 h-16 rounded-xl bg-obsidian-950 border border-slate-800 flex-shrink-0 overflow-hidden p-1">
+            <img
+              src={product.image}
+              alt={product.name}
+              className="w-full h-full object-contain"
+            />
+          </div>
           <div className="flex-1 min-w-0">
-            <h4 className="text-sm font-bold text-gray-900 truncate">{product.name}</h4>
-            <p className="text-xs text-gray-500">{product.material}</p>
-            <p className="text-sm font-bold text-[#0F172A] pt-0.5">
-              {product.priceMad.toLocaleString('fr-FR')} DH
-            </p>
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] text-champagne-400 font-mono font-semibold uppercase">{product.category}</span>
+              <span className="text-[10px] text-slate-400 font-mono">{product.diameter}</span>
+            </div>
+            <h4 className="text-sm font-bold text-white truncate">{product.name}</h4>
+            <div className="flex items-center justify-between pt-1">
+              <span className="text-xs text-slate-400">{product.movement.split('(')[0]}</span>
+              <span className="text-sm font-black text-white font-mono">
+                {product.priceMad.toLocaleString('fr-FR')} <span className="text-champagne-400 text-xs">DH</span>
+              </span>
+            </div>
           </div>
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-4">
+        <form onSubmit={handleSubmit} className="p-5 overflow-y-auto space-y-4">
           {errorMsg && (
-            <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg font-medium">
+            <div className="p-3 bg-red-950/80 border border-red-800 text-red-200 text-xs rounded-xl font-medium">
               ⚠️ {errorMsg}
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">
+            <label className="block text-xs font-mono font-semibold text-slate-300 mb-1 uppercase tracking-wider">
               Nom et Prénom *
             </label>
             <input
               type="text"
               required
-              placeholder="Ex: Yassine El Mansouri"
+              placeholder="Ex: Yassine Bennani"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              className="w-full text-sm px-3.5 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent"
+              className="w-full text-sm px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-champagne-400"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">
+            <label className="block text-xs font-mono font-semibold text-slate-300 mb-1 uppercase tracking-wider">
               Numéro de Téléphone WhatsApp *
             </label>
             <input
               type="tel"
               required
-              placeholder="Ex: 06 45 22 20 09"
+              placeholder="Ex: 06 61 23 45 67"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="w-full text-sm px-3.5 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent"
+              className="w-full text-sm px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-champagne-400"
             />
+            <p className="text-[10px] text-slate-500 mt-1">Notre équipe vous contactera sur WhatsApp pour confirmer l'heure de passage.</p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
+              <label className="block text-xs font-mono font-semibold text-slate-300 mb-1 uppercase tracking-wider">
                 Ville de Livraison *
               </label>
               <select
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                className="w-full text-sm px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37] bg-white"
+                className="w-full text-sm px-3 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-champagne-400"
               >
                 {MOROCCAN_CITIES.map((c) => (
-                  <option key={c} value={c}>
+                  <option key={c} value={c} className="bg-slate-900 text-white">
                     {c}
                   </option>
                 ))}
@@ -176,70 +195,83 @@ export default function CodModal({ product, onClose, onSuccess }: CodModalProps)
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
-                Ajustement Bracelet
+              <label className="block text-xs font-mono font-semibold text-slate-300 mb-1 uppercase tracking-wider">
+                Ajustement Tour de Poignet
               </label>
               <select
-                value={preference}
-                onChange={(e) => setPreference(e.target.value)}
-                className="w-full text-sm px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37] bg-white"
+                value={wristSize}
+                onChange={(e) => setWristSize(e.target.value)}
+                className="w-full text-sm px-3 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-champagne-400"
               >
-                <option value="Standard (Ajustable)">Standard (Ajustable)</option>
-                <option value="Poignet Fin">Poignet Fin</option>
-                <option value="Poignet Large (+Maillons)">Poignet Large (+Maillons)</option>
+                <option value="Standard Ajustable (17-18 cm)" className="bg-slate-900 text-white">Standard Ajustable (17-18 cm)</option>
+                <option value="Poignet Fin (15-16 cm)" className="bg-slate-900 text-white">Poignet Fin (15-16 cm)</option>
+                <option value="Poignet Large (+Maillons inclus)" className="bg-slate-900 text-white">Poignet Large (+Maillons inclus)</option>
               </select>
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">
-              Adresse de Livraison ou Quartier
+            <label className="block text-xs font-mono font-semibold text-slate-300 mb-1 uppercase tracking-wider">
+              Adresse ou Quartier (Optionnel)
             </label>
             <input
               type="text"
-              placeholder="Ex: Boulevard d'Anfa, Quartier Racine"
+              placeholder="Ex: Boulevard Zerktouni, Maarif"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              className="w-full text-sm px-3.5 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+              className="w-full text-sm px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-champagne-400"
             />
           </div>
 
           {/* Pricing calculation */}
-          <div className="bg-gray-50 p-3.5 rounded-lg text-xs space-y-1.5 border border-gray-200">
-            <div className="flex justify-between text-gray-600">
-              <span>Prix du modèle</span>
+          <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2 text-xs font-mono">
+            <div className="flex justify-between text-slate-400">
+              <span>Montre {product.name.split(' ')[0]} {product.diameter}</span>
               <span>{product.priceMad.toLocaleString('fr-FR')} DH</span>
             </div>
-            <div className="flex justify-between text-gray-600">
-              <span>Frais de livraison ({city})</span>
-              <span className={shippingFee === 0 ? 'text-[#059669] font-bold' : ''}>
-                {shippingFee === 0 ? 'Gratuit (Casablanca)' : `${shippingFee} DH`}
+            <div className="flex justify-between text-slate-400">
+              <span>Livraison ({city})</span>
+              <span className={shippingFee === 0 ? 'text-emerald-400 font-bold' : 'text-slate-300'}>
+                {shippingFee === 0 ? 'Gratuit (Casablanca 24h)' : `${shippingFee} DH (48h)`}
               </span>
             </div>
-            <div className="flex justify-between text-sm font-bold text-[#0F172A] pt-1 border-t border-gray-200">
-              <span>Total à payer au livreur</span>
-              <span className="text-base text-[#D4AF37]">{totalToPay.toLocaleString('fr-FR')} DH</span>
+            <div className="flex justify-between text-slate-400">
+              <span>Écrin & Certificat d'authenticité</span>
+              <span className="text-champagne-400 font-bold">OFFERT (0 DH)</span>
+            </div>
+            <div className="flex justify-between text-sm font-bold text-white pt-2 border-t border-slate-800">
+              <span>Total à régler au livreur :</span>
+              <span className="text-base text-champagne-400 font-mono font-black">
+                {totalToPay.toLocaleString('fr-FR')} DH
+              </span>
             </div>
           </div>
 
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-3.5 bg-[#0F172A] hover:bg-[#D4AF37] text-white text-sm font-bold rounded-xl transition-all shadow-md flex items-center justify-center gap-2 uppercase tracking-wider"
+            className="w-full py-4 bg-gradient-to-r from-rolex-600 to-rolex-700 hover:from-rolex-500 hover:to-rolex-600 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-xl shadow-rolex-600/30 active:scale-95 flex items-center justify-center gap-2"
           >
             {submitting ? (
-              <span>Validation en cours...</span>
+              <span>Enregistrement sécurisé...</span>
             ) : (
               <>
-                <span>Confirmer Ma Commande (COD)</span>
-                <span>✓</span>
+                <Lock className="w-4 h-4" />
+                <span>Confirmer Ma Commande (Paiement Réception)</span>
               </>
             )}
           </button>
 
-          <p className="text-[11px] text-gray-400 text-center">
-            🔒 Vos données sont protégées. Zéro paiement requis aujourd'hui (Paiement à la réception).
-          </p>
+          <div className="flex items-center justify-center gap-4 text-[10px] text-slate-500 pt-1">
+            <span className="flex items-center gap-1">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+              Inspection à la livraison
+            </span>
+            <span className="flex items-center gap-1">
+              <Truck className="w-3.5 h-3.5 text-champagne-400" />
+              Suivi WhatsApp 24/7
+            </span>
+          </div>
         </form>
 
       </div>
