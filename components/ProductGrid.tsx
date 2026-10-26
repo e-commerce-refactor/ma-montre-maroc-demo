@@ -1,8 +1,8 @@
 'use strict';
 'use client';
 
-import React, {{ useState }} from 'react';
-import {{ PRODUCTS, Product }} from '../data/products';
+import React, { useState } from 'react';
+import { PRODUCTS, Product } from '../data/products';
 import ProductCard from './ProductCard';
 
 interface ProductGridProps {
